@@ -123,12 +123,10 @@ const ReactThumbUp_v01 = ({
       dispatch({ type: "THUMB_UP_CANCEL" });
       setThumbUpCnt((prev) => prev - 1);
       if (!thumbUpEcho) return;
-      thumbUpEcho.style.backgroundColor = "var(--thumbup-minus-color)";
       echoThumbEcho(thumbUpEcho, "-1");
     } else if (state.lastAtion === "THUMB_DOWN") {
       dispatch({ type: "THUMB_DOWN_CANCEL" });
       setThumbDownCnt((prev) => prev - 1);
-      thumbDownEcho.style.backgroundColor = "var(--thumbup-minus-color)";
       echoThumbEcho(thumbDownEcho, "-1");
     } else {
       dispatch({ type: "THUMB_UP" });
@@ -136,7 +134,6 @@ const ReactThumbUp_v01 = ({
       if (thumbUpIcon) {
         thumbAnimate(thumbUpIcon as HTMLElement);
       }
-      thumbUpEcho.style.backgroundColor = "var(--thumbup-plus-color)";
       echoThumbEcho(thumbUpEcho as HTMLElement, "+1");
     }
   };
@@ -154,12 +151,10 @@ const ReactThumbUp_v01 = ({
     if (state.lastAtion === "THUMB_DOWN") {
       dispatch({ type: "THUMB_DOWN_CANCEL" });
       setThumbDownCnt((prev) => prev - 1);
-      thumbDownEcho.style.backgroundColor = "var(--thumbup-minus-color)";
       echoThumbEcho(thumbDownEcho, "-1");
     } else if (state.lastAtion === "THUMB_UP") {
       dispatch({ type: "THUMB_UP_CANCEL" });
       setThumbUpCnt((prev) => prev - 1);
-      thumbUpEcho.style.backgroundColor = "var(--thumbup-minus-color)";
       echoThumbEcho(thumbUpEcho, "-1");
     } else {
       dispatch({ type: "THUMB_DOWN" });
@@ -167,7 +162,6 @@ const ReactThumbUp_v01 = ({
       if (thumbDownIcon) {
         thumbAnimate(thumbDownIcon as HTMLElement);
       }
-      thumbDownEcho.style.backgroundColor = "var(--thumbup-plus-color)";
       echoThumbEcho(thumbDownEcho as HTMLElement, "+1");
     }
   };
@@ -181,6 +175,10 @@ const ReactThumbUp_v01 = ({
 
   function echoThumbEcho(thumbEcho: HTMLElement, str: string) {
     thumbEcho.textContent = str;
+    if (str === "-1")
+      thumbEcho.style.backgroundColor = "var(--thumbup-minus-color)";
+    if (str === "+1")
+      thumbEcho.style.backgroundColor = "var(--thumbup-plus-color)";
     thumbEcho.classList.add("first");
     setTimeout(() => {
       thumbEcho.classList.remove("first");
