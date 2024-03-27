@@ -14,12 +14,18 @@ Thumb-Up 컴포넌트….
 
 */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactThumbUp_v01 from "./modules/thumb-up/ReactThumbUp_v01";
 
 function App() {
-  const [thumbUpCnt, setThumbUpCnt] = useState<number>(0);
-  const [thumbDownCnt, setThumbDownCnt] = useState<number>(0);
+  const [thumbUpCnt, setThumbUpCnt] = useState<number>(12);
+  const [thumbDownCnt, setThumbDownCnt] = useState<number>(4);
+
+  useEffect(() => {
+    // DB Update Rutine comes here..
+    console.log("thumbUpCnt:", thumbUpCnt);
+    console.log("thumbDownCnt:", thumbDownCnt);
+  }, [thumbUpCnt, thumbDownCnt]);
 
   return (
     <>
@@ -32,7 +38,9 @@ function App() {
         setThumbUpCnt={setThumbUpCnt}
         thumbDownCnt={thumbDownCnt}
         setThumbDownCnt={setThumbDownCnt}
-      />
+      >
+        {/* I Like It!! */}
+      </ReactThumbUp_v01>
     </>
   );
 }
