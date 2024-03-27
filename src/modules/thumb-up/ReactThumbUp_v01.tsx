@@ -51,7 +51,7 @@ DB 의 값을 변경시키는 Prisma 액션은 부모 컴포넌트에서 상태�
 
 import { PiThumbsDownDuotone, PiThumbsUpDuotone } from "react-icons/pi";
 import { defaultThumbConfig } from "./defaultThumbConfig";
-import { ReactNode, useEffect, useReducer } from "react";
+import { ReactNode, useEffect, useReducer, useRef } from "react";
 import { thumbupReducer } from "./reducer/thumbupReducer";
 import "./style/style.css";
 
@@ -81,8 +81,6 @@ type ThumbStyleType = {
 
 type ReactThumbUpPropsType = {
   auth: boolean;
-  articleObject: { title: string };
-  userObject: { name: string };
   thumbUpCnt: number;
   setThumbUpCnt: (cnt: number | ((prev: number) => number)) => void;
   thumbDownCnt: number;
@@ -103,75 +101,150 @@ const ReactThumbUp_v01 = ({
     color: defaultThumbConfig.color.unfilled,
     fill: "",
   };
-
   const [state, dispatch] = useReducer(thumbupReducer, thumbUpInitialState);
+  const thumbUpRef = useRef<HTMLDivElement>(null);
+  const thumbDownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     console.log("useEffect is running");
   }, []);
 
   const thumbUpAction = () => {
+    if (!thumbUpRef.current) return;
+    const thumbUpIcon = thumbUpRef.current.querySelector(".thumb-up-icon");
+    const thumbUpEcho = thumbUpRef.current.querySelector(
+      ".thumbup-echo"
+    ) as HTMLElement;
+    if (!thumbDownRef || !thumbDownRef.current) return;
+    const thumbDownEcho = thumbDownRef.current.querySelector(
+      ".thumbup-echo"
+    ) as HTMLElement;
     if (state.lastAtion === "THUMB_UP") {
       dispatch({ type: "THUMB_UP_CANCEL" });
       setThumbUpCnt((prev) => prev - 1);
+      if (!thumbUpEcho) return;
+      thumbUpEcho.style.backgroundColor = "var(--thumbup-minus-color)";
+      echoThumbEcho(thumbUpEcho, "-1");
     } else if (state.lastAtion === "THUMB_DOWN") {
       dispatch({ type: "THUMB_DOWN_CANCEL" });
       setThumbDownCnt((prev) => prev - 1);
+      thumbDownEcho.style.backgroundColor = "var(--thumbup-minus-color)";
+      echoThumbEcho(thumbDownEcho, "-1");
     } else {
       dispatch({ type: "THUMB_UP" });
       setThumbUpCnt((prev) => prev + 1);
+      if (thumbUpIcon) {
+        thumbAnimate(thumbUpIcon as HTMLElement);
+      }
+      thumbUpEcho.style.backgroundColor = "var(--thumbup-plus-color)";
+      echoThumbEcho(thumbUpEcho as HTMLElement, "+1");
     }
   };
   const thumbDownAction = () => {
+    if (!thumbUpRef.current) return;
+    const thumbUpEcho = thumbUpRef.current.querySelector(
+      ".thumbup-echo"
+    ) as HTMLElement;
+    if (!thumbDownRef || !thumbDownRef.current) return;
+    const thumbDownIcon =
+      thumbDownRef.current.querySelector(".thumb-down-icon");
+    const thumbDownEcho = thumbDownRef.current.querySelector(
+      ".thumbup-echo"
+    ) as HTMLElement;
     if (state.lastAtion === "THUMB_DOWN") {
       dispatch({ type: "THUMB_DOWN_CANCEL" });
       setThumbDownCnt((prev) => prev - 1);
+      thumbDownEcho.style.backgroundColor = "var(--thumbup-minus-color)";
+      echoThumbEcho(thumbDownEcho, "-1");
     } else if (state.lastAtion === "THUMB_UP") {
       dispatch({ type: "THUMB_UP_CANCEL" });
       setThumbUpCnt((prev) => prev - 1);
+      thumbUpEcho.style.backgroundColor = "var(--thumbup-minus-color)";
+      echoThumbEcho(thumbUpEcho, "-1");
     } else {
       dispatch({ type: "THUMB_DOWN" });
       setThumbDownCnt((prev) => prev + 1);
+      if (thumbDownIcon) {
+        thumbAnimate(thumbDownIcon as HTMLElement);
+      }
+      thumbDownEcho.style.backgroundColor = "var(--thumbup-plus-color)";
+      echoThumbEcho(thumbDownEcho as HTMLElement, "+1");
     }
   };
+
+  function thumbAnimate(thumbElement: HTMLElement) {
+    thumbElement.classList.add("scale");
+    setTimeout(() => {
+      thumbElement.classList.remove("scale");
+    }, 500); // 0.5초 지연 후에 클래스 제거
+  }
+
+  function echoThumbEcho(thumbEcho: HTMLElement, str: string) {
+    thumbEcho.textContent = str;
+    thumbEcho.classList.add("first");
+    setTimeout(() => {
+      thumbEcho.classList.remove("first");
+    }, 500); // 0.5초 지연 후에 클래스 제거
+  }
 
   return (
     <>
       <div className="thumbup-container flex flex-container">
         {children && <div className="thumbUp-child">{children}</div>}
-        <PiThumbsUpDuotone
-          className="cursor-pointer thumb-up-icon"
-          key="thumbUp"
-          onClick={() => {
-            auth ? thumbUpAction() : null;
-          }}
-          style={{
-            ...defaultThumbUpStyle,
-            fill:
-              thumbUpCnt > 0
-                ? defaultThumbConfig.color.filled
-                : defaultThumbConfig.color.unfilled,
-          }}
-        />{" "}
-        {thumbUpCnt}
-        <PiThumbsDownDuotone
-          className="cursor-pointer thumb-down-icon"
-          key="thumbDown"
-          onClick={() => {
-            auth ? thumbDownAction() : null;
-          }}
-          style={{
-            ...defaultThumbUpStyle,
-            fill:
-              thumbUpCnt < 0
-                ? defaultThumbConfig.color.filled
-                : defaultThumbConfig.color.unfilled,
-          }}
-        />
-        {thumbDownCnt}
+        <div className="thumbup-icon-wrapper" ref={thumbUpRef}>
+          <PiThumbsUpDuotone
+            className={`thumb-up-icon ${auth ? "cursor-pointer " : ""}`}
+            key="thumbUp"
+            onClick={() => {
+              auth ? thumbUpAction() : null;
+            }}
+            style={{
+              ...defaultThumbUpStyle,
+              fill:
+                thumbUpCnt > 0
+                  ? defaultThumbConfig.color.filled
+                  : defaultThumbConfig.color.unfilled,
+            }}
+          />
+          <div className="thumb-up-counter   ">{thumbUpCnt}</div>
+          <div className="thumbup-echo">+1</div>
+        </div>
+
+        <div className="thumbup-icon-wrapper" ref={thumbDownRef}>
+          <PiThumbsDownDuotone
+            className={`thumb-down-icon ${auth ? "cursor-pointer " : ""}`}
+            key="thumbDown"
+            onClick={() => {
+              auth ? thumbDownAction() : null;
+            }}
+            style={{
+              ...defaultThumbUpStyle,
+              fill:
+                thumbUpCnt < 0
+                  ? defaultThumbConfig.color.filled
+                  : defaultThumbConfig.color.unfilled,
+            }}
+          />
+          <div className="thumb-down-counter   ">{thumbDownCnt}</div>
+          <div className="thumbup-echo">-1</div>
+        </div>
       </div>
     </>
   );
 };
 
 export default ReactThumbUp_v01;
+
+// type RunAnimation = {
+//   elem: HTMLElement;
+//   className: string;
+// };
+// function runAnimation({ elem, className }: RunAnimation) {
+//   if (elem && !elem.classList.contains(className)) {
+//     elem.classList.add(className);
+//   } else {
+//     elem.classList.remove(className);
+//     elem.style.width = elem.offsetWidth.toString();
+//     elem.classList.add(className);
+//   }
+// }
